@@ -5,54 +5,41 @@ import { EmployeeService } from '../services/employee.service';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { configService } from '../../config/config.service';
-import { AppController } from '../../app.controller';
-import { AppModule } from '../../app.module';
-import { AppService } from '../../app.service';
 import { Employee } from '../models/employee.entity';
 import { EmployeeController } from './employee.controller';
-import { APP_PIPE } from '@nestjs/core';
-// import { APP_PIPE } from '@nestjs/core';
-// import { Employee } from '../models/employee.entity';
-// import { EmployeeController } from './employee.controller';
-// import { TypeOrmModule } from '@nestjs/typeorm';
+import { EmployeesRepository } from '../services/employees.repository';
+import { Repository } from 'typeorm';
 
 describe('Cats', () => {
   let app: INestApplication;
   const employeeService = { findAll: () => ['test'] };
 
+
   beforeAll(async () => {
-    try {
       const moduleRef = await Test.createTestingModule({
         imports: [
           EmployeeModule,
           TypeOrmModule.forFeature([Employee]),
-          // AppModule,
           TypeOrmModule.forRoot(configService.getTypeOrmConfig())
         ],
         controllers:[
-          // AppController
           EmployeeController
         ],
         providers: [
-          // AppService
           EmployeeService,
-          // {
-          //   provide: APP_PIPE,
-          //   useClass: ValidationPipe
-          // }
-
+          {
+            provide: EmployeesRepository,
+            useValue: Repository,
+          },
         ]
       })
-        .compile();
+      .compile();
 
       app = moduleRef.createNestApplication();
       await app.init();
-    } catch (error) {
-      console.log('+++++++++++++', error);
-    }
   });
 
-  it(`/GET cats`, () => {
+  it(`/GET employees`, () => {
     return request(app.getHttpServer())
       .get('/employees')
       .expect(200)
